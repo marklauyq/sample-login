@@ -10,6 +10,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Redis;
 
 class RedisLog
@@ -30,10 +31,10 @@ class RedisLog
      */
     public function __construct($id)
     {
-        $this->id = $id;
-        $key = 'user:'.$this->id;
+        $this->id   = $id;
+        $key        = 'user:' . $this->id;
         $this->logs = Redis::hgetall($key);
-        if(empty($this->logs)){
+        if (empty($this->logs)) {
             $this->logs = [];
         }
     }
@@ -42,7 +43,8 @@ class RedisLog
      * push to the logs
      * @param array $dataset
      */
-    public function push(Array $dataset){
+    public function push(Array $dataset)
+    {
         array_push($this->logs, json_encode($dataset));
     }
 
@@ -50,11 +52,22 @@ class RedisLog
      * return all the logs
      * @return mixed
      */
-    public function getLogs(){
+    public function getLogs()
+    {
         $logs = [];
-        foreach($this->logs as $log){
+        foreach ($this->logs as $log) {
             $logs[] = json_decode($log, true);
         }
+
+        usort($logs, function ($a, $b) {
+            if ($a['datetime'] === $b['datetime']) {
+                return 0;
+            }
+            $a = Carbon::parse($a['datetime']);
+            $b = Carbon::parse($b['datetime']);
+
+            return($a->greaterThan($b))? 1 : -1;
+        });
         return $logs;
     }
 
@@ -62,11 +75,12 @@ class RedisLog
      * save the current data into redis
      * @param $id
      */
-    public function store(){
-        $key = 'user:'.$this->id;
+    public function store()
+    {
+        $key = 'user:' . $this->id;
         try {
             Redis::hmset($key, $this->logs);
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             dd([$key, $this->logs]);
         }
     }
@@ -75,7 +89,8 @@ class RedisLog
      * get the key for this user
      * @return string
      */
-    public function getKey(){
+    public function getKey()
+    {
         return 'user:' . $this->id;
     }
 }
