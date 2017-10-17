@@ -15,6 +15,7 @@ class RedisLogEntry
 {
     public static $ACTIVITY_REGISTER = 'Register';
     public static $ACTIVITY_LOGIN = 'Login';
+    public static $ACTIVITY_API_REQUEST = 'API-Request';
     public static $ACTIVITY_LOGOUT = 'Logout';
     public static $ACTIVITY_LOGIN_FAIL = 'Logout';
 
